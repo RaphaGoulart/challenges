@@ -10,4 +10,5 @@ Após instalar o docker utilizar o comando abaixo
 
 Após instalar Node.js, NPM e MongoDB utilizar os comandos abaixo
 > npm install
+> 
 > node index.js
