@@ -19,23 +19,7 @@ class ListEditHero extends React.Component {
         selectLat: '',
         selectLng: '',
 
-        data: [
-            {
-              id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-              name: "First Item",
-              class: 'A'
-            },
-            {
-              id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-              name: "Second Item",
-              class: 'B'
-            },
-            {
-              id: "58694a0f-3da1-471f-bd96-145571e29d72",
-              name: "Third Item",
-              class: 'C'
-            },
-        ]
+        data: []
     }
 
     constructor(props) {
@@ -43,42 +27,190 @@ class ListEditHero extends React.Component {
     } 
 
     getData = async () => {
+        let data = {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }   
 
+        await fetch('http://192.168.1.9:9000/api/heroes/list', data)
+        .then((response) => response.json())
+        .then((responseData) => {
+            this.setState({loading: false})
+            this.setState({data: responseData})
+
+        }) 
+        .catch((err) => {
+            this.setState({loading: false})
+            Alert.alert(
+                "Erro",
+                "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                [{ text: "OK"}],
+                { cancelable: false }
+            )
+        })
        
     }
 
     handleSubmit = async () => {
+        
+        var message  = {
+            'name': this.state.selectName,
+            'class': this.state.selectClass,
+            'location': [{
+                'lat': this.state.selectLat,
+                'lng': this.state.selectLng
+            }]
+        }
 
+        this.setState({loading: true})
+        
+        let data = {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(message)
+        }          
+        await fetch(`http://192.168.1.9:9000/api/heroes/edit/${this.state.selectID}`, data)
+                .then((response) => {
+                    this.setState({loading: false})
+
+                    if(response.status==200){
+                        Alert.alert(
+                            "Enviado",
+                            "Edição realizada com sucesso!",
+                            [{ text: "OK",
+                            onPress: () => {
+                                this.getData()
+
+                            }}],
+                            { cancelable: false }
+                        )
+
+                    }
+                    else{
+                        Alert.alert(
+                            "Erro",
+                            "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                            [{ text: "OK"}],
+                            { cancelable: false }
+                        )
+                    }
+
+                    return response.json()
+                })
+                .then(responseData => {
+                    this.setState({ 
+                        selectID: responseData._id,
+                        selectClass: responseData.class,
+                        selectName: responseData.name,
+                        selectLat: responseData.location.coordinates[0].toString(),
+                        selectLng: responseData.location.coordinates[1].toString(),
+                    })
+                })
+                .catch((err) => {
+                    this.setState({loading: false})
+                    Alert.alert(
+                        "Erro",
+                        "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                        [{ text: "OK"}],
+                        { cancelable: false }
+                    )
+                })
+    }
+
+    remove = async (id) => {
+        this.setState({loading: true})
+        
+        let data = {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }          
+        await fetch(`http://192.168.1.9:9000/api/heroes/delete/${id}`, data)
+                .then((response) => {
+                    this.setState({loading: false})
+
+                    if(response.status==200){
+                        Alert.alert(
+                            "Enviado",
+                            "Herói removido com sucesso!",
+                            [{ text: "OK", 
+                            onPress: () => {
+                                this.getData()
+                            }}],
+                            { cancelable: false }
+                        )
+
+                    }
+                    else{
+                        Alert.alert(
+                            "Erro",
+                            "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                            [{ text: "OK"}],
+                            { cancelable: false }
+                        )
+                    }
+                })
+                .catch((err) => {
+                    this.setState({loading: false})
+                    Alert.alert(
+                        "Erro",
+                        "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                        [{ text: "OK"}],
+                        { cancelable: false }
+                    )
+                })
+    }
+
+    componentDidMount() {
+        this.getData();
+
+        this.focusListener = this.props.navigation.addListener('focus', () => { 
+                                    this.getData()
+                                }
+                            );
     }
 
     renderItem = ({ item }) => {
-        const backgroundColor = item.id === this.state.selected ? "#c8c8c8" : "#50508d";
+        const backgroundColor = item._id === this.state.selected ? "#c8c8c8" : "#50508d";
     
         return (
         <Item
             item={item}
             onPress={() => {
-                this.state.selected = item.id
+                this.state.selected = item._id
                 Alert.alert(
                     "Informações",
                     ` Nome: ${item.name} 
-                    \n Classe: ${item.class} `,
+                    \n Classe: ${item.class} 
+                    \n Posição: ${item.location.coordinates}
+                    \n Alocado: ${item.allocated}`,
                     [
                       {
                         text: 'Remover',
                         onPress: () => {
+                            console.log(item._id)
+                            this.remove(item._id)
                         }
                       },
                       {
                         text: 'Editar',
                         onPress: () => {
-                            this.setState({selected: null})
-                            this.setState({selectID: item.id})
-                            this.setState({selectClass: item.class})
-                            this.setState({selectName: item.name})
-                            this.setState({selectLat: item.lat})
-                            this.setState({selectLng: item.lng})
-                            this.setState({editing: true})
+                            this.setState({ selected: null,
+                                            selectID: item._id,
+                                            selectClass: item.class,
+                                            selectName: item.name,
+                                            selectLat: item.location.coordinates[0].toString(),
+                                            selectLng: item.location.coordinates[1].toString(),
+                                            editing: true
+                            })
                         },
                       },
                       { text: "OK"}],
@@ -174,7 +306,7 @@ class ListEditHero extends React.Component {
                         <FlatList
                             data={this.state.data}
                             renderItem={(item) => this.renderItem(item)}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item._id}
                             extraData={this.state.selected}
                         />
                     </View>

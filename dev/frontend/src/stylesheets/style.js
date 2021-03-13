@@ -69,7 +69,8 @@ var styles = StyleSheet.create({
     },
     listItem: {
         fontSize: 18,
-        textAlign: "center"
+        textAlign: "center",
+        color: 'white'
     },
     itemContainer: {
         margin: 5,

@@ -31,7 +31,7 @@ class NewUser extends React.Component {
 
         else{
             var message  = {
-                'nome': this.state.nome,
+                'name': this.state.nome,
                 'email': this.state.email,
                 'login': this.state.login,
                 'password': this.state.password,
@@ -41,12 +41,16 @@ class NewUser extends React.Component {
             
             let data = {
                 method: 'POST',
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(message)
             }
 
-            await fetch('https://localhost:9000/api/users/new', data)
+            await fetch('http://192.168.1.9:9000/api/users/new', data)
                     .then(response => {
-
                         this.setState({loading: false})
 
                         if(response.status==200){

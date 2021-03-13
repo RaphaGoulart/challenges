@@ -36,33 +36,25 @@ class Login extends React.Component {
             
             let data = {
                 method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(message)
-            }
-            this.props.navigation.navigate('Drawer')
+            }          
             
-            /*
-            await fetch('https://localhost:9000/api/auth/login', data)
-                    .then(response => {
-
+            await fetch('http://192.168.1.9:9000/api/auth/login', data)
+                    .then((response) => response.json())
+                    .then((responseData) => {
                         this.setState({loading: false})
                         
-                        if(response.status==200){
-                            if(response.json.auth){
-                                this.props.navigation.navigate('Drawer', {screen: 'Home'})
-                            }
-                            else{
-                                Alert.alert(
-                                    "Erro",
-                                    "Usuário ou senha incorretos!",
-                                    [{ text: "OK"}],
-                                    { cancelable: false }
-                                )
-                            }
+                        if(responseData.auth){
+                            this.props.navigation.navigate('Drawer', {screen: 'Home'})
                         }
                         else{
                             Alert.alert(
                                 "Erro",
-                                "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                                "Usuário ou senha incorretos!",
                                 [{ text: "OK"}],
                                 { cancelable: false }
                             )
@@ -70,6 +62,7 @@ class Login extends React.Component {
 
                     }) 
                     .catch((err) => {
+                        console.log(err)
                         this.setState({loading: false})
                         Alert.alert(
                             "Erro",
@@ -77,7 +70,7 @@ class Login extends React.Component {
                             [{ text: "OK"}],
                             { cancelable: false }
                         )
-                    })*/
+                    })
         }
     }
 

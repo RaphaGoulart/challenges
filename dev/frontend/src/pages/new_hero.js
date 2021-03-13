@@ -44,14 +44,21 @@ class NewHero extends React.Component {
             
             let data = {
                 method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(message)
-            }
-            await fetch('https://localhost:9000/api/heroes/new', data)
+            }   
+            await fetch('http://192.168.1.9:9000/api/heroes/new', data)
                     .then(response => {
 
                         this.setState({loading: false})
 
                         if(response.status==200){
+                            
+                            this.setState({name: '', class: '', lat: '', lng: ''})
+
                             Alert.alert(
                                 "Enviado",
                                 "Cadastro realizada com sucesso!",

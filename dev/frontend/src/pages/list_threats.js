@@ -10,26 +10,7 @@ class ListThreats extends React.Component {
         loading: false,
         selected: null,
 
-        data: [
-            {
-              id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-              monsterName: "First Item",
-              hero: "numero 1",
-              dangerLevel: 'Dragon'
-            },
-            {
-              id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-              monsterName: "Second Item",
-              hero: "numero 2",
-              dangerLevel: 'God'
-            },
-            {
-              id: "58694a0f-3da1-471f-bd96-145571e29d72",
-              monsterName: "Third Item",
-              hero: "numero 3",
-              dangerLevel: 'Wolf'
-            },
-          ]
+        data: []
     }
 
     constructor(props) {
@@ -38,22 +19,47 @@ class ListThreats extends React.Component {
 
     getData = async () => {
 
-       
+        let data = {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }   
+
+        await fetch('http://192.168.1.9:9000/api/threats/list', data)
+        .then((response) => response.json())
+        .then((responseData) => {
+
+            this.setState({loading: false})
+            this.setState({data: responseData})
+
+        }) 
+        .catch((err) => {
+            this.setState({loading: false})
+            Alert.alert(
+                "Erro",
+                "Não foi possivel realizar essa operação. Tente novamente mais tarde",
+                [{ text: "OK"}],
+                { cancelable: false }
+            )
+        })
     }
 
     renderItem = ({ item }) => {
-        const backgroundColor = item.id === this.state.selected ? "#c8c8c8" : "#8d0000";
+        const backgroundColor = item._id === this.state.selected ? "#c8c8c8" : "#8d0000";
     
         return (
         <Item
             item={item}
             onPress={() => {
-                this.state.selected = item.id
+                this.state.selected = item._id
                 Alert.alert(
                     "Informações",
                     ` Nome: ${item.monsterName}
                     \n Rank: ${item.dangerLevel}
-                    \n Heroi: ${item.hero} `,
+                    \n Heroi: ${item.hero} 
+                    \n Posição: ${item.location.coordinates}`,
                     [{ text: "OK"}],
                     { cancelable: false }
                   );
@@ -64,6 +70,14 @@ class ListThreats extends React.Component {
         );
     };
 
+    componentDidMount() {
+        this.getData();
+
+        this.focusListener = this.props.navigation.addListener('focus', () => { 
+                                    this.getData()
+                                }
+                            );
+    }
 
     render(){      
 
@@ -90,7 +104,7 @@ class ListThreats extends React.Component {
                         <FlatList
                             data={this.state.data}
                             renderItem={(item) => this.renderItem(item)}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item._id}
                             extraData={this.state.selected}
                         />
                     </View>
