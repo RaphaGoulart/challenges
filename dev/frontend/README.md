@@ -7,4 +7,4 @@ Após instalar Node.js e NPM, utilizar junto de um emulador ou celular em modo d
 > 
 > react-native run-android
 
-####Pode ser necessário alterar os IPs de acesso ao servidor backend 
+###Pode ser necessário alterar os IPs de acesso ao servidor backend 
