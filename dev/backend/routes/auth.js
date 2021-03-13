@@ -8,9 +8,8 @@ router.post('/login', (req, res) => {
 
   User.findOne({login: req.body.login})
     .then(user => {
-      
-      if(user.password = req.body.password){
 
+      if(user.password == req.body.password){
         let id = user._id
         const token = jwt.sign( { id }, 'SECRET_TOKEN', {
             expiresIn: 6000

@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const io = require("socket.io-client");
+const socket = io("https://zrp-challenge-socket.herokuapp.com/");
 
 const Threat = require('./models/Threat');
 const Hero = require('./models/Hero');
 
 const app = express();
-const socket = io("https://zrp-challenge-socket.herokuapp.com/");
 
 const auth = require('./routes/auth');
 const users = require('./routes/users');
@@ -20,8 +20,8 @@ app.use(bodyParser.json());
 //microsservicos
 app.use('/api/auth', auth);
 app.use('/api/users', users);
-app.use('/api/heroes', verifyToken, heroes);
-app.use('/api/threats', verifyToken, threats);
+app.use('/api/heroes', heroes);
+app.use('/api/threats', threats);
 
 
 //conexao com MongoDB
@@ -70,6 +70,7 @@ socket.on("occurrence", async (data) => {
   //encontra heroi adequado
   await Hero.find({
     class: rank,
+    allocated: false,
     location: {
       $near: {
         $geometry: {
@@ -84,9 +85,14 @@ socket.on("occurrence", async (data) => {
   })
 
   //aloca heroi
-  await Hero.findOneAndUpdate({ _id: hero._id }, { allocated: true })
+  if(hero != undefined)
+    await Hero.findOneAndUpdate({ _id: hero._id }, { allocated: true })
 
   //guarda historico da ameaca
+  let heroName;
+  if(hero!=undefined)
+    heroName = hero.name
+
   threat = await new Threat({
     location: {
       type: "Point",
@@ -94,11 +100,12 @@ socket.on("occurrence", async (data) => {
     }, 
     dangerLevel: data.dangerLevel,
     monsterName: data.monsterName,
-    hero: hero.name
+    hero: heroName
   }).save()
 
   //desaloca heroi
-  await Hero.findOneAndUpdate({ _id: hero._id }, { allocated: false })
+  if(hero!=undefined)
+    await Hero.findOneAndUpdate({ _id: hero._id }, { allocated: false })
 
 }); 
 
